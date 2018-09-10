@@ -1,0 +1,5 @@
+
+void init_multitasking()
+{
+
+}

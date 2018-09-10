@@ -1,0 +1,24 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "vga.h": "c",
+        "array": "c",
+        "initializer_list": "c",
+        "string_view": "c",
+        "utility": "c",
+        "chrono": "cpp",
+        "limits": "cpp",
+        "algorithm": "cpp",
+        "custom_defs.h": "c",
+        "common.h": "c",
+        "deque": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "apic.h": "c",
+        "acpi.h": "c",
+        "ata.h": "c",
+        "ahci.h": "c",
+        "vfs.h": "c",
+        "ostream": "c"
+    }
+}
