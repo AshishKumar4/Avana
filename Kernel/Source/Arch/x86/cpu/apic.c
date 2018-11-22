@@ -28,7 +28,7 @@ void __attribute__((optimize("O0"))) BSP_init_LAPIC(uint32_t base)
   //localapic_write_with_mask(LAPIC_SVR, (1<<8), (1<<8));
 
   //  printf("\n\nTesting APIC! Local APIC revision: %x Max LVT entry: %x\n",localapic_read(base, LAPIC_VER)&0xff, ((localapic_read(base, LAPIC_VER)>>16) & 0xff)+1);
- /*
+  /*
   // Aqeous LAPIC Init Series, commented out in favor of that borrowed from xv6
   localapic_write(base, LAPIC_ERROR, 0x1F); /// 0x1F: temporary vector (all other bits: 0)
   localapic_write(base, LAPIC_TPR, 0);
@@ -40,13 +40,11 @@ void __attribute__((optimize("O0"))) BSP_init_LAPIC(uint32_t base)
   //  uint32_t eax, edx;
   //  cpuGetMSR(IA32_APIC_BASE_MSR, &eax, &edx);
   //  cpuSetMSR((IA32_APIC_BASE_MSR)|(1<<11), &eax, &edx);
-  
 
   init_LAPIC();
   Lapic = (LAPIC_RegisterMAP_t *)base;
   uint32_t version_lapic = Lapic->lapicVER_Reg[0];
   version_lapic &= 0xff;
-
 }
 
 void __attribute__((optimize("O0"))) AP_init_LAPIC()
@@ -69,7 +67,7 @@ void init_LAPIC() // xv6 Port
   // If xv6 cared more about precise timekeeping,
   // TICR would be calibrated using an external time source.
   localapic_write(APIC_LOCAL_BASE, LAPIC_TDCR, LAPIC_X1);
-  localapic_write(APIC_LOCAL_BASE, LAPIC_TIMER, LAPIC_PERIODIC | (T_IRQ0 + IRQ_TIMER));
+  localapic_write(APIC_LOCAL_BASE, LAPIC_TIMER, LAPIC_PERIODIC | 51);
   localapic_write(APIC_LOCAL_BASE, LAPIC_TICR, 10000000);
 
   // Disable logical interrupt lines.
@@ -90,40 +88,50 @@ void init_LAPIC() // xv6 Port
 
   // Ack any outstanding interrupts.
   localapic_write(APIC_LOCAL_BASE, LAPIC_EOI, 0);
-
+  /*
   // Send an Init Level De-Assert to synchronise arbitration ID's.
   localapic_write(APIC_LOCAL_BASE, LAPIC_ICRHI, 0);
   localapic_write(APIC_LOCAL_BASE, LAPIC_ICRLO, LAPIC_BCAST | LAPIC_INIT | LAPIC_LEVEL);
   while (((uint32_t *)APIC_LOCAL_BASE)[LAPIC_ICRLO] & LAPIC_DELIVS)
     ;
-
+*/
   // Enable interrupts on the APIC (but not on the processor).
   localapic_write(APIC_LOCAL_BASE, LAPIC_TPR, 0);
+  /*
+  localapic_write(APIC_LOCAL_BASE, LAPIC_ERROR, 0x1F); /// 0x1F: temporary vector (all other bits: 0)
+  localapic_write(APIC_LOCAL_BASE, LAPIC_TPR, 0);
+
+  localapic_write(APIC_LOCAL_BASE, LAPIC_DFR, 0xffffffff);
+  localapic_write(APIC_LOCAL_BASE, LAPIC_LDR, 0x01000000);
+  localapic_write(APIC_LOCAL_BASE, LAPIC_SVR, 0x100|0xff);//*/
 }
 
 void apic_start_timer(uint32_t base, uint32_t intnum)
-{
-    // Tell APIC timer to use divider 4
-    localapic_write(base, LAPIC_TDCR, 0x3);
+{ /*
+  localapic_write(base, LAPIC_DFR, 0xffffffff);
+  localapic_write(base, LAPIC_LDR, 0x01000000);
+  localapic_write(base, LAPIC_SVR, 0x100|0xff);
+  */
+  // Tell APIC timer to use divider 4
+  localapic_write(base, LAPIC_TDCR, 0x3);
 
-    // Prepare the PIT to sleep for 10ms (10000µs)
-    //pit_prepare_sleep(10000);
+  // Prepare the PIT to sleep for 10ms (10000µs)
+  //pit_prepare_sleep(10000);
 
-    // Set APIC init counter to -1
-    localapic_write(base, LAPIC_TICR, 0xFFFFFFFF);
+  // Set APIC init counter to -1
+  localapic_write(base, LAPIC_TICR, 0xFFFFFFFF);
 
-    // Perform PIT-supported sleep
-    //pit_perform_sleep();
-    // Stop the APIC timer
-    localapic_write(base, LAPIC_TIMER, 0x10000);
+  // Perform PIT-supported sleep
+  //pit_perform_sleep();
+  // Stop the APIC timer
+  localapic_write(base, LAPIC_TIMER, 0x10000);
 
-    // Now we know how often the APIC timer has ticked in 10ms
+  // Now we know how often the APIC timer has ticked in 10ms
   //  uint32_t ticksIn10ms = 0xFFFFFFFF - localapic_read(LAPIC_TCCR);
-
-    // Start timer as periodic on IRQ 50, divider 4, with the number of ticks we counted
-    localapic_write(base, LAPIC_TIMER, intnum | 0x00000); //One - Shot
-    localapic_write(base, LAPIC_TDCR, 0x3);
-    localapic_write(base, LAPIC_TICR, 1);
+  
+  localapic_write(APIC_LOCAL_BASE, LAPIC_TDCR, 0x3);
+  localapic_write(APIC_LOCAL_BASE, LAPIC_TIMER, LAPIC_FIXED | intnum);
+  localapic_write(APIC_LOCAL_BASE, LAPIC_TICR, 10000000);//*/
 }
 
 void MADTapic_parse()

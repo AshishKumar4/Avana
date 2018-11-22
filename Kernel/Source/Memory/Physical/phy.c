@@ -5,6 +5,7 @@
 #include "stdlib.h"
 
 /*
+	The Physical Memory Layout:
 	[0-4MB] = KERNEL Binary
 	[4-8MB] = KERNEL MAIN PAGE DIRECTORY (sys_dir)
 	[8-12MB] = FRAME STACK FOR PHYSICAL FRAME ALLOCATION
@@ -291,6 +292,10 @@ int f_list_add_chunk(OrderedList_t *list, Chunk_t *chunk)
 					ent[idx].start = chunk;
 					//ent[idx].end = ;
 				}
+				else if(i + 1 == ent[idx].count)	// Is exactly the last chunk
+				{
+					ent[idx].end = chunk;
+				}
 				++ent[idx].count;
 				cf = 1;
 				break;
@@ -317,7 +322,7 @@ int f_list_add_chunk(OrderedList_t *list, Chunk_t *chunk)
 		// Basically, add this chunk at the end of the chunk 'c'
 		// and create an entry at this index
 
-		// First find this chunk 'c' which is the last chunk with size for than this index.
+		// First find this chunk 'c' which is the last chunk with size more than this index.
 		for (int i = idx + 1; i >= 0; i--)
 		{
 			if (ent[i].count)
@@ -472,6 +477,10 @@ Chunk_t *mem_alloc_chunk(MemDesc_t *mm)
 		--mm->chunk_stack_count;
 	}
 	memset((void*)c, 0, sizeof(Chunk_t));
+	if(!c)
+	{
+		panic("Ran out of Chunks to allocate for current Allocator!");
+	}
 	return c;
 }
 
@@ -522,10 +531,14 @@ uintptr_t mem_alloc_memory(MemDesc_t *mm, size_t size)
 	for (size_t i = 0; c != NULL; i++)
 	{
 		//printf("[K %x]", c->size);
-		if (c->size <= size) // Search for the best fit chunk
+		if (c->size < size) // Search for the best fit chunk
 		{
-			//printf("[M]{{%x}}", c->back);
+			//printf("[M]{{%x, %x}}", c->back, c);
 			Chunk_t *cfree = c->back;
+			if(!cfree)
+			{
+				panic("Ran Out of Allocable Memory for current Allocator Chunk!");
+			}
 			Chunk_t *cused = chunk_split_size(mm, cfree, size);
 			f_list_remove_chunk(flist, cfree);
 			if (cfree->size != 0)
@@ -538,6 +551,12 @@ uintptr_t mem_alloc_memory(MemDesc_t *mm, size_t size)
 			}
 			u_list_add_chunk(ulist, cused);
 			return cused->start;
+		}
+		else if (c->size == size)
+		{
+			f_list_remove_chunk(flist, c);
+			u_list_add_chunk(ulist, c);
+			return c->start;
 		}
 		c = c->next;
 	}
@@ -571,6 +590,11 @@ int mem_dealloc_memory(MemDesc_t *mm, uintptr_t addr)
 	Chunk_t *c = u_list_search_chunk_waddr(&(mm->usedList), addr);
 	if (c == NULL)
 	{
+		printf("\nUsedList...");
+		list_print(&(mm->usedList));
+		printf("\nFreeList");
+		list_print(&(mm->freeList));
+		while(1);
 		printf("\n[Deallocation Error, Couldn't find addr %x in used list]", addr);
 		return 1;
 	}
@@ -597,11 +621,21 @@ uint32_t pmem_4k(int size)  // Returns 4 Kilobyte aligned Memory i.e, memory add
 
 uintptr_t iden_alloc(size_t size)
 {
+	/*printf("\nUsedList...");
+    list_print(&(KERNEL_IDEN_MEMDESC->usedList));
+    printf("\nFreeList");
+    list_print(&(KERNEL_IDEN_MEMDESC->freeList));
+    printf("\nHello");*/
 	return (uintptr_t)mem_alloc_memory(KERNEL_IDEN_MEMDESC, size);
 }
 
 int iden_dealloc(uintptr_t addr)
 {
+	/*printf("\nUsedList...");
+    list_print(&(KERNEL_IDEN_MEMDESC->usedList));
+    printf("\nFreeList");
+    list_print(&(KERNEL_IDEN_MEMDESC->freeList));
+    printf("\nHello");*/
 	return mem_dealloc_memory(KERNEL_IDEN_MEMDESC, addr);
 }
 
@@ -621,11 +655,16 @@ int list_print(OrderedList_t *list)
 	return 0;
 }
 
+/*
+	TODO: Make system so that when Identity mapped memory gets almost over, new
+	memory is allocated and identity mapped. THIS IS FUCKING IMPORTANT!!!!!
+*/
+
 int init_phy_mem()
 {
 	printf("\nCreating Kernel Memory Descriptor...");
 	KERNEL_MEMDESC = create_mem_desc(0xC0C00000, 0xC8400000, 0xFF000000);	// Memory Descriptors for the Kernel, Useful memory from 0xc8400000 to 0xFF000000
-	KERNEL_IDEN_MEMDESC = create_mem_desc(0xC0C0F000, 0xBF000000, 0xBFF00000); // 15mb //0xC2000000, 0xC8400000); // For Identity mapped 100 mb
+	KERNEL_IDEN_MEMDESC = create_mem_desc(0xC0C0F000, 0xBF000000, 0xBFF00000); // 15mb //0xC2000000, 0xC8400000); 
 	printf(" %g[Done]%g Kernel Memory : %x\n", 2, 15, KERNEL_MEMDESC->freeList.start->size);
 
 	kmalloc = kernel_alloc;

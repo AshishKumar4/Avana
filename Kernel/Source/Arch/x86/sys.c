@@ -181,3 +181,19 @@ lcr3(uint32_t val)
   asm volatile("movl %0,%%cr3" : : "r" (val));
 }
 
+inline void cli()
+{
+	asm volatile("cli");
+}
+
+inline void sti()
+{
+	asm volatile("sti");
+}
+
+inline void sti_int50()
+{
+    asm volatile("sti;\
+		int $51");
+}
+

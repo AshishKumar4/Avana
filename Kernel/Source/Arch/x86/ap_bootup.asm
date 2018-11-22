@@ -109,18 +109,46 @@ lpp:
   ;je AP_enable_Paging
 
   cmp eax, 0x3240
+  je set_DT
+
+  cmp eax, 0x3241
+  je set_smp
+
+  jmp lpp
+
+set_DT:
+
+  mov dword eax, 0xfee00020                 ; LAPIC ID entry
+  mov dword eax, [eax]
+  shr eax, 24
+  mov ebx, eax
+
+  xor dword eax, eax
+  mov dword eax, [0x5566]
+  
+  cmp eax, ebx
   jne lpp
+  mov ecx, eax
 
   mov dword eax, 0x32409798
+  mov dword eax, [eax]
   lgdt[eax]
 
   mov dword eax, 0x32409799
+  mov dword eax, [eax]
   lidt[eax]
 
- ; mov dword eax, 0x32409797
- ; mov eax, [eax]
- ; ltr ax
+  xor eax, eax
+  mov dword eax, 0x2B 
+  ltr ax
 
+  xor eax, eax
+  mov [0x5599], eax 
+  mov [0x5566], eax
+
+  jmp lpp
+
+set_smp:
   mov dword eax, 0xfee000b0
   mov dword [eax], 0
 
@@ -130,8 +158,8 @@ lpp:
   mov dword cr4, eax 
   ; Add it to the SMP System
 back_code:
-  mov ax, 0x2B
-  ltr ax
+  ;mov ax, 0x2B
+  ;ltr ax
   
   int 50
   mov dword eax, 0x42842222

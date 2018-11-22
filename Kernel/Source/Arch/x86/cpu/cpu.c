@@ -130,9 +130,13 @@ int init_smp()
     ByteSequence_Replace(0x3260, 2, (uint32_t)pmode_code_addr, 2, (uint32_t *)vector_addr, (uint32_t *)(vector_addr + AP_startup_Code_sz));
 
     *(uint32_t *)(vector_addr + AP_startup_Code_sz + 8) = 0;
+    *(uint32_t *)(vector_addr + AP_startup_Code_sz + 4) = 0;
     ByteSequence_Replace(0x5599, 2, vector_addr + AP_startup_Code_sz + 8, 2, (uint32_t *)pmode_code_addr, (uint32_t *)(pmode_code_addr + pmode_code_size));
+    ByteSequence_Replace(0x5566, 2, vector_addr + AP_startup_Code_sz + 4, 2, (uint32_t *)pmode_code_addr, (uint32_t *)(pmode_code_addr + pmode_code_size));
     ByteSequence_Replace(0x4959, 2, pmode_code_addr, 2, (uint32_t *)pmode_code_addr, (uint32_t *)(pmode_code_addr + pmode_code_size));
 
+    ByteSequence_Replace(0x32409798, 4, (uint32_t)&ap_gdts, 4, (uint32_t *)pmode_code_addr, (uint32_t *)(pmode_code_addr + pmode_code_size));
+    ByteSequence_Replace(0x32409799, 4, (uint32_t)&ap_idts, 4, (uint32_t *)pmode_code_addr, (uint32_t *)(pmode_code_addr + pmode_code_size));
     uintptr_t pg_dir;
     asm volatile("mov %%cr3, %%eax; mov %%eax, %0":"=r"(pg_dir)); 
     ByteSequence_Replace(0x12344321, 4, pg_dir, 4, (uint32_t *)pmode_code_addr, (uint32_t *)(pmode_code_addr + pmode_code_size));

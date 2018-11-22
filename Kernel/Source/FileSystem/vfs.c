@@ -7,7 +7,7 @@
 #include "vfs.h"
 #include "ext2/ext2_fs.h"
 #include "AqFS/Aqfs.h"
-#//include "ata.h"
+#include "vfs_exAPIs.c"//include "ata.h"
 
 Partition_Desc_t* ptmp;
 
@@ -94,7 +94,10 @@ void vfs_setup_aqfs2()
   ptmp->FS.mv = &aqfs2_mv;
   ptmp->FS.rm = &aqfs2_del;
   */
-  ptmp->FS.load = &Aq_LoadFile;
+  ptmp->FS.listnodes = &Aq_ListEntrys;
+  ptmp->FS.makenode = &Aqfs_makenode;
+  ptmp->FS.delnode = &Aqfs_delnode;
+  ptmp->FS.load = &Aqfs_list;
   ptmp->FS.close = &Aq_CloseFile;
   ptmp->FS.read = &Aq_ReadFile;
   ptmp->FS.write = &Aq_WriteFile;

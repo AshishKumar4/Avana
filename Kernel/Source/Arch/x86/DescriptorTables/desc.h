@@ -67,7 +67,7 @@ typedef volatile struct __tss_struct
 } tss_struct_t;
 
 
-tss_struct_t tss_tmp, **tss_entries = (tss_struct_t**)&tss_tmp;
+tss_struct_t tss_tmp, **tss_entries;// = (tss_struct_t**)&tss_tmp;
 uint32_t total_tss = 0;
 
 //Assembly Functions to load descriptors table onto the processor
@@ -87,5 +87,5 @@ uint32_t ds_TallyTbl[] = {0x10, 0x23, 0x10, 0x23};
 void init_descriptor_tables();
 
  void SimpleGDT_Setup(uint32_t* gdt, uint32_t* gdtr);
- void General_GDT_Setup(uint32_t* gdt, uint32_t* gdtr);
+ void General_GDT_Setup(uint32_t* gdt, uint32_t* gdtr, uint32_t *tss_ptr);
 void SimpleIDT_Setup(uint32_t* idt, uint32_t* idtr);

@@ -60,6 +60,9 @@ extern uintptr_t interrupts_tmp_esp;
 	__sync_synchronize(); \
 	name ## Locked = 0;
 
+DECLARE_LOCK(THREADTABLE_LOCK);
+DECLARE_LOCK(TASK_LOCK_KILL);
+
 typedef struct registers
  {
     uint32_t ds;                  // Data segment selector
@@ -100,6 +103,17 @@ inline uint32_t Higher16(uint32_t val)
 
 
 #define ASSERT(b) ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b))
+
+void exit()
+{
+  asm volatile("cli; hlt");
+}
+
+void panic(char *s)
+{
+  printf(2, "%s\n", s);
+  exit();
+}
 
 typedef uint32_t size_t;
 

@@ -3,6 +3,8 @@
 #include "stdint.h"
 #include "Arch/x86/custom_defs.h"
 
+#define FL_IF 9
+
 int init_cpu_x86();
 
 uint32_t readl(uint32_t addr);

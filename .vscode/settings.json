@@ -19,6 +19,11 @@
         "ata.h": "c",
         "ahci.h": "c",
         "vfs.h": "c",
-        "ostream": "c"
+        "ostream": "c",
+        "x86.h": "c",
+        "scheduler.h": "c",
+        "tasking.h": "c",
+        "threadtable.h": "c",
+        "std_iohandling.h": "c"
     }
 }

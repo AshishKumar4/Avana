@@ -36,6 +36,9 @@ typedef struct FS_Desc
   uintptr_t  (*load)();
   int  (*close)();
   int  (*getSize)();
+  int  (*listnodes)(char*);
+  int  (*makenode)(char*, int);
+  int  (*delnode)(char*);
 /*
   func_t mkfl;
   func_t mkdir;
@@ -55,7 +58,7 @@ typedef struct Partition_Desc
 }Partition_Desc_t;
 
 Partition_Desc_t* Current_Partition;
-
+/*
 typedef struct FILE_desc
 {
   uintptr_t handle;
@@ -63,7 +66,7 @@ typedef struct FILE_desc
   uint32_t fsize;
   char mode[8];
 }FILE;
-
+*/
 typedef struct Partition_struct
 {
   uint8_t boot_indicator;

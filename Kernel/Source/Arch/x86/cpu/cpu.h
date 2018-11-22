@@ -108,6 +108,8 @@ uint32_t AP_startup_Code_sz;
 uint32_t pmode_code_size;
 uint32_t rmode_code_size;
 
+uintptr_t ap_idts, ap_gdts;
+
 volatile uint32_t CPU_BOOT_MODE = 1;
 
 #define cpuid(in, a, b, c, d) asm volatile("cpuid": "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (in));

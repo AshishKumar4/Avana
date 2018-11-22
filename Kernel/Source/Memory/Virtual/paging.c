@@ -54,6 +54,30 @@ void Setup_SystemDir()
     *(uint32_t*)(0xC0100000) = 0;*/
 }
 
+uintptr_t pgdir_create(uint32_t pgdir)        // General Page Directories
+{   
+    // First allocate enough memory to save the page directory structure
+    PageDirectory_t *dir;
+    if(pgdir == NULL)
+        dir = phy_alloc4K();
+    else 
+        dir = pgdir;
+
+    // Map the kernel to this new page directory, the 3rd GB and above.
+    //Map_identity_kernelOnly(0xBF000000, 0xFFFFF000-0xBF000000, dir); 
+    PageDirectory_t* tmp = system_dir;
+    // Identity map first mb because GDT and IDT reside there. Have to change this
+    for (int i = 0; i < 0; i++)
+    {
+        dir->table_entry[i] = system_dir->table_entry[i];
+    }
+    for (int i = 764; i < 1024; i++)
+    {
+        dir->table_entry[i] = system_dir->table_entry[i];
+    }   
+    return dir;
+}
+
 void Map_non_identity(uint32_t phys, uint32_t virt, uint32_t size, PageDirectory_t *dir)
 {
     for (uint32_t i = phys, j = virt; i < phys + size; i += 4096, j += 4096)
@@ -283,3 +307,11 @@ uint32_t __attribute__((optimize("O2"))) get_phyAddr(uint32_t addr, PageDirector
     frame += tdrr % 4096;
     return frame;
 }
+
+
+void switch_directory(PageDirectory_t *dir)
+{
+  //Get_Scheduler()->current_pdir = (uint32_t*)dir;
+    asm volatile("mov %0, %%cr3":: "r"((uint32_t)dir):"memory");
+}
+

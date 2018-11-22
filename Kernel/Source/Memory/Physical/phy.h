@@ -65,6 +65,7 @@ typedef struct MemDesc
 	uintptr_t		chunk_list_terminate;	// Where in the memory does the list reaches at max
 	OrderedList_t	freeList;
 	OrderedList_t	usedList;
+	uintptr_t 		pgdir;
 }MemDesc_t;
 
 typedef struct IndexTableEntry
@@ -86,3 +87,5 @@ uint32_t pop_frameStack();
 void push_frameStack(uint32_t fr);
 
 uint32_t phy_alloc4K();
+
+MemDesc_t* generate_general_memdesc();

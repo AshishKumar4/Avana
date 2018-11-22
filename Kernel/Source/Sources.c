@@ -14,6 +14,11 @@
 #include "FileSystem/ext2/ext2_fs.c"
 #include "FileSystem/vfs.c"
 
-#include "MultiTasking/task.c"
+#include "Processing/tasking.c"
 
 #include "Console/Console.c"
+
+#include "Timer/timer.c"
+#include "Timer/cmos.c"
+
+#include "IO_Handling/std_iohandling.c"

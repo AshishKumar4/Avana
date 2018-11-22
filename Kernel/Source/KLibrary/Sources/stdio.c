@@ -19,6 +19,30 @@ void print(const char* data, size_t data_length)
 		putchar((int) ((const unsigned char*) data)[i]);
 }
 
+static void printnum(int xx, int base, int sign)
+{
+  static char digits[] = "0123456789abcdef";
+  char buf[16];
+  int i;
+  uint32_t x;
+
+  if(sign && (sign = xx < 0))
+    x = -xx;
+  else
+    x = xx;
+
+  i = 0;
+  do{
+    buf[i++] = digits[x % base];
+  }while((x /= base) != 0);
+
+  if(sign)
+    buf[i++] = '-';
+
+  while(--i >= 0)
+    console_putchar(buf[i]);
+}
+
 void printint(uint_fast32_t in)
 {
     char tmp[16];
@@ -295,4 +319,94 @@ void itoa(unsigned i,char* buf, unsigned base)
 int puts(const char* string)
 {
 	return printf("%s\n", string);
+}
+
+
+
+/******************** FILE STREAM *********************/
+
+
+FILE* fopen(const char* filename, const char* mode)
+{/*
+	uintptr_t handle = (uintptr_t)(Current_Partition->FS.load((char*)filename));
+	if(!handle)
+	{
+		printf("\n\"%s\" File dosent exist", filename);
+		if(stroccr((char*)mode, 'w'))
+		{
+			// Create the file!
+			Current_Partition->FS.mkfl(filename, NULL);
+			handle = (uintptr_t)(Current_Partition->FS.load((char*)filename));
+			if(!handle)
+			{
+				printf("\nStill not possible!");
+				return NULL;
+			}
+		}
+	}
+	FILE* stream = (FILE*)kmalloc(sizeof(FILE));
+	strcpy(stream->mode, mode);
+	stream->handle = handle;
+	stream->fsize = Current_Partition->FS.getSize(handle);
+	//printf("\n[%d]", stream->fsize);
+	stream->fstream_ptr = 0;
+	return stream;*/
+}
+
+void fclose(FILE* stream)
+{
+	//file_closeOGP((char*)stream->handle->full_path);
+	//Current_Partition->FS.close(stream->handle);
+}
+
+int fseek(FILE* stream, int offset, int whence)
+{
+	switch(whence)
+	{
+		case SEEK_CUR:
+				stream->fstream_ptr = offset;
+			break;
+		case SEEK_END:
+				stream->fstream_ptr = stream->fsize - offset;
+			break;
+		case SEEK_SET:
+				stream->fstream_ptr += offset;
+			break;
+		default:;
+	}
+	return 0;//stream->fstream_ptr;
+}
+
+int ftell(FILE* stream)
+{
+	return stream->fstream_ptr;
+}
+
+void rewind(FILE* stream)
+{
+	stream->fstream_ptr = 0;
+}
+
+int fsize(FILE* stream)
+{
+	return stream->fsize;
+}
+
+size_t fread(void* ptr, size_t size, size_t nmemb, FILE* stream)
+{
+    /*
+	Current_Partition->FS.read((uint32_t*)ptr, (uint32_t)stream->fstream_ptr, (uint32_t)(nmemb*size), stream->handle);
+	stream->fstream_ptr += size*nmemb;
+	return size*nmemb;*/
+}
+
+size_t fwrite ( const void * ptr, size_t size, size_t count, FILE * stream )
+{/*
+	if(!stream->fsize)
+		printf("\n <%d>", file_writeAppend((uint32_t*)ptr, size*count, (char*)stream->handle->full_path));
+	else
+		file_editFM((uint32_t)stream->fstream_ptr, 0, (uint32_t*)ptr, (uint32_t)(size*count), (char*)stream->handle->full_path);*/
+	/*Current_Partition->FS.write((uint32_t*)ptr, (uint32_t)stream->fstream_ptr, size*count, stream->handle, 0);
+	stream->fstream_ptr += size*count;
+	return size*count;*/
 }

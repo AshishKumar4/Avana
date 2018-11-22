@@ -53,6 +53,9 @@ int Aq_CreateRoot()
     newD->dhdrOffset = entry->offset;
     Aq_DirSave_Entry(entry);    // Save the Directory header.
 
+    entry = Aq_DirCreate_NewEntry(parent, ".", &(newD->location));
+    entry->type = AQ_DIR;
+
     entry = Aq_DirCreate_NewEntry(parent, "..", &(newD->location));
     entry->type = AQ_DIR;
 
@@ -172,6 +175,7 @@ int Aqfs2_burn(int partitionId)
     AqfsMainFile->metaTable_ptr->location.lower32 = mb->metaTable.lower32;
     AqfsMainFile->metaTable_ptr->location.higher32 = mb->metaTable.higher32;
     AqAllocInit(vl.lower32 + 2 + ((mb->metaSpread)), tsize); // Initialize Disk Memory Management
+    
     Aq_CreateRoot();
     Aq_Save_All();
 
@@ -228,7 +232,7 @@ int Aq_CreateNew_Directory(char* name, uint32_t perm)
 {
     AqDirectory_t* parent = Aq_DirGet_Parent(name);
     if(!parent) return 0;
-   // printf("\n[{%d}]", parent->location.lower32);
+    printf("\n[{%d}]", parent->location.lower32);
     AqDirectory_t* newD = (AqDirectory_t*)kmalloc(AQ_BLOCK_SIZE);
     memset_fast((void*)newD, 0, sizeof(AqDirectory_t));
     /*  Create the new file structure   */
@@ -242,10 +246,11 @@ int Aq_CreateNew_Directory(char* name, uint32_t perm)
     Aq_LocationCopy(&(newD->location), AqAlloc(1));
     Aq_LocationCopy(&(newD->parentDir), &(parent->location));
     /*  Put the structure details in Parent Directory   */
-  //  printf("\n[%s]", Aq_GetLname(name));
+    printf("\n[%s]", Aq_GetLname(name));
 
     //AqDhdrEntry_t* entry = Aq_DirCreate_NewEntry(parent, Aq_GetLname(name), &(newD->location));
     AqDhdrEntry_t* entry = Aq_DirGet_FreeEntry(parent);
+    printf("1  ");
     if(!entry) return 0;
     entry->magic = AQ_DHR_MAGIC;
     Aq_LocationCopy(&(entry->location), &(newD->location));
@@ -253,11 +258,12 @@ int Aq_CreateNew_Directory(char* name, uint32_t perm)
     entry->type = AQ_DIR;
     Aq_DirSave_Entry(entry);    // Save the Directory header.
     
+    printf("2  ");
     newD->dhdr = Aq_GetDhdr_fromEntry(entry)->location;
     newD->dhdrOffset = entry->offset;
     Aq_DirCreate_NewHeader(newD);
 
-    Aq_DirCreate_NewEntry(newD, ".", &(AqfsMainFile->root_dir->location))->type = AQ_DIR;     // Make link to Root
+    //Aq_DirCreate_NewEntry(newD, ".", &(newD->location))->type = AQ_DIR;     // Make link to itself
     Aq_DirCreate_NewEntry(newD, "..", &(parent->location))->type = AQ_DIR;     // Make link to Root
 
     Aq_DirSave_Dir(newD);  // Save the file structure on hard disk

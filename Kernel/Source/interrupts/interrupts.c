@@ -67,4 +67,6 @@ void pageFaultHandle()
 
 void PIT_Handle()
 {
+    printf("\nH");
+    //asm volatile("int $51");
 }

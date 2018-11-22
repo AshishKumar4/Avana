@@ -31,7 +31,7 @@ interrupts_tmp_esp: RESD 1
 
 section .text
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; General Interrupt Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Exception/Fault Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 [GLOBAL defaultExceptionHandler]
@@ -39,6 +39,8 @@ section .text
 
 defaultExceptionHandler:
     cli 
+    mov eax,0x6655
+    hlt
     pusha
 
     call defaultExceptionHandle
@@ -59,37 +61,6 @@ defaultExceptionHandler:
     pop eax
 
     iretd
-
-
-[GLOBAL defaultInterruptHandler]
-[EXTERN defaultInterruptHandle]
-
-defaultInterruptHandler:
-    cli 
-    pusha
-
-    call defaultInterruptHandle
-
-    popa 
-    push eax
-    mov eax, 0xFEE000B0                ; APIC Timer End Of Interrupt
-    mov dword [eax], 0
-
-    push edx
-    mov dx, 0x20                      ; PIT Timer End Of Interrupt
-    mov ax, 0x20
-    out dx, ax
-    mov dx, 0xA0
-    mov ax, 0x20
-    out dx, ax
-    pop edx
-    pop eax
-
-    iretd
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Some Important Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 [GLOBAL pageFaultHandler]
 [EXTERN pageFaultHandle]
@@ -125,6 +96,116 @@ pageFaultHandler:
     mov eax, [eax_backup]
     iretd
 
+
+[GLOBAL doubleFault_handler]
+;[EXTERN doubleFault_handle]
+
+doubleFault_handler:
+    cli 
+    mov eax, 0x4284
+    hlt
+    pusha
+
+    mov eax, esp 
+    mov [esp_backup], eax 
+
+    mov eax, [interrupts_tmp_esp]
+    mov esp, eax
+    mov ebp, eax
+    mov eax, cr2
+    mov [pfault_cr2], eax
+
+    mov eax, cr3 
+    mov [pfault_cr3], eax
+    ;call doubleFault_handle
+
+    mov eax, [esp_backup]
+    mov esp, eax
+
+    popa 
+    push eax
+    mov eax, 0xFEE000B0                ; APIC Timer End Of Interrupt
+    mov dword [eax], 0
+    pop eax
+
+    mov [eax_backup], eax 
+    pop eax 
+    mov eax, [eax_backup]
+    iretd
+
+
+
+[GLOBAL generalProtectionFault_handler]
+;[EXTERN generalProtectionFault_handle]
+
+generalProtectionFault_handler:
+    cli 
+    mov eax, 0x5544
+    hlt
+    pusha
+
+    mov eax, esp 
+    mov [esp_backup], eax 
+
+    mov eax, [interrupts_tmp_esp]
+    mov esp, eax
+    mov ebp, eax
+    mov eax, cr2
+    mov [pfault_cr2], eax
+
+    mov eax, cr3 
+    mov [pfault_cr3], eax
+    ;;call generalProtectionFault_handle
+
+    mov eax, [esp_backup]
+    mov esp, eax
+
+    popa 
+    push eax
+    mov eax, 0xFEE000B0                ; APIC Timer End Of Interrupt
+    mov dword [eax], 0
+    pop eax
+
+    mov [eax_backup], eax 
+    pop eax 
+    mov eax, [eax_backup]
+    iretd
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; General Interrupt Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[GLOBAL defaultInterruptHandler]
+[EXTERN defaultInterruptHandle]
+
+defaultInterruptHandler:
+    cli 
+    mov eax,0x7788
+    hlt
+    pusha
+
+    call defaultInterruptHandle
+
+    popa 
+    push eax
+    mov eax, 0xFEE000B0                ; APIC Timer End Of Interrupt
+    mov dword [eax], 0
+
+    push edx
+    mov dx, 0x20                      ; PIT Timer End Of Interrupt
+    mov ax, 0x20
+    out dx, ax
+    mov dx, 0xA0
+    mov ax, 0x20
+    out dx, ax
+    pop edx
+    pop eax
+
+    iretd
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Some Important Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 [EXTERN PIT_Handle]
 [GLOBAL PIT_Handler]
 
@@ -132,8 +213,9 @@ pageFaultHandler:
 PIT_Handler:
   cli
   pusha
-
-  ;call PIT_Handle
+  ;mov eax, 0x5555
+   ; hlt
+  call PIT_Handle
 
   popa 
   push eax 

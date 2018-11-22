@@ -88,6 +88,8 @@ enum PAGE_PDE_FLAGS
 
 
 /****/
+uintptr_t pgdir_create();
+
 void Map_non_identity(uint32_t phys, uint32_t virt, uint32_t size, PageDirectory_t* dir);
 
 void Unmap_non_identity(uint32_t phys, uint32_t virt, uint32_t size, PageDirectory_t* dir);
@@ -98,7 +100,7 @@ void flush_tlb_entry (uint32_t addr);
 
 page_t* MapPage (void* phys, void* virt, PageDirectory_t* dir);
 
-void Map_identity_(uint32_t phy,size_t size, PageDirectory_t* dir);
+void Map_identity(uint32_t phy,size_t size, PageDirectory_t* dir);
 void Map_identity_readOnly(uint32_t phy,size_t size, PageDirectory_t* dir);
 void Map_identity_kernelOnly(uint32_t phy,size_t size, PageDirectory_t* dir);
 
@@ -209,3 +211,5 @@ int pd_entry_is_avail_2 (table_t e)
 {
 	return e & CUSTOM_PDE_AVAIL_2;
 }
+
+void switch_directory(PageDirectory_t *dir);

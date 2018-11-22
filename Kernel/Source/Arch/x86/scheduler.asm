@@ -54,7 +54,7 @@ Scheduler_t:
   mov dword ebx, [ebx]                                ; Get Task Structure from ThreadTableEntry
   mov dword [ebx+24], ecx                               ; 0x4284ABD4->active = last_lower
 
-  mov dword [0x4284ABD6], 0xf000000
+  mov dword [0x4284ABD6], 0xf0000
 
 
   ret
@@ -94,7 +94,7 @@ StepDown_Schedule_t:
   ;mov dword eax, [0x4284ABD1]
   ;and dword eax, 0xfffff
   ;shr dword eax, 5
-  mov dword [0x4284ABD6], 0xf000000
+  mov dword [0x4284ABD6], 0xf0000
 
   ret
 
@@ -104,7 +104,7 @@ bottomReached_exit_t:
   ;mov dword eax, [0x4284ABD1]
   ;and dword eax, 0xfffff
   ;shr dword eax, 5
-  mov dword [0x4284ABD6], 0xf000000
+  mov dword [0x4284ABD6], 0xf0000
 
   ret
 
@@ -135,7 +135,7 @@ option1_t:
   ;mov dword eax, [0x4284ABD1]
   ;and dword eax, 0xfffff
   ;shr dword eax, 5
-  mov dword [0x4284ABD6], 0xf000000
+  mov dword [0x4284ABD6], 0xf0000
 
   ret
 

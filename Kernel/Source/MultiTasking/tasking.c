@@ -1,5 +1,0 @@
-
-void init_multitasking()
-{
-
-}

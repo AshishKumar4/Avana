@@ -10,10 +10,16 @@ int kernel_preInit(uintptr_t multiboot_header)
     init_basic_mem();
     init_mem();
 
+    tss_entries = iden_alloc(sizeof(tss_struct_t)*100);
+
     init_basic_hardware();       // PCI, AHCI, ETC.
     init_cpu_x86();
-    vfs_init();//Aqfs2_Checkfs();
-    //Aq_ListEntrys_direct(Aq_CurrentDir);
+    /*Aqfs2_Partitioner(0, 5, 200*1024);
+    Aqfs2_burn(0);*/
+    vfs_init();
+
+    //Aq_ListEntrys(".");
+    init_multitasking();
     return 0;
 }
 
