@@ -1,5 +1,6 @@
 #include "Hardware/vga/vga.h"
 #include "Arch/x86.h"
+#include "Arch/x86/custom_defs.h"
 
 extern uint32_t consolerow;
 extern uint32_t consolecolumn;
@@ -9,6 +10,8 @@ extern uint8_t default_console_color;
 extern uint16_t *vgamem;
 extern uint16_t *console_buffer;
 extern uint16_t *console_dbuffer;  // Pointer to VGA Buffer current start offset
+
+DECLARE_LOCK(VGA_PUTCHAR);
 
 int vga_init()
 {
@@ -55,6 +58,7 @@ void vga_putentryat(char c, uint8_t color, size_t x, size_t y)      // puts a ch
 
 int vga_putchar(char ch)   // Puts a character on the console next to the last character, filling the console linearly
 {
+	LOCK(VGA_PUTCHAR);
 	if(ch == '\n')   // If New line character
 	{
 		consolecolumn = 0;
@@ -69,6 +73,7 @@ int vga_putchar(char ch)   // Puts a character on the console next to the last c
 			--consolerow;
 		}
 		vga_updateCursor();
+		UNLOCK(VGA_PUTCHAR);
 		return (int)ch;  // Nothing needs to be printed
 	}
 	else if(ch == '\t')      // If Tab Character
@@ -91,10 +96,9 @@ int vga_putchar(char ch)   // Puts a character on the console next to the last c
             }
 			--consolerow;
 		}
-		vga_updateCursor();
-		return (int)ch;
 	}
 	vga_updateCursor();
+	UNLOCK(VGA_PUTCHAR);
 	return (int)ch;
 }
 

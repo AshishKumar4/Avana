@@ -1,6 +1,7 @@
-CC:=gcc
-LD:=i686-elf-ld
-AS:=i686-elf-as
+CC:=i686-linux-gnu-gcc-11
+CPP:=i686-linux-gnu-g++-11
+LD:=i686-linux-gnu-ld
+AS:=i686-linux-gnu-as
 NASM:=nasm
 
 SOURCE:=Source
@@ -15,6 +16,8 @@ OBJ_FILES := $(patsubst $(ARCH_x86)/%.asm,$(ARCH_x86)/%.o,$(wildcard $(ARCH_x86)
 OBJ_FILES := $(OBJ_FILES) $(patsubst $(ARCH_x86)/%.S,$(ARCH_x86)/%.o,$(wildcard $(ARCH_x86)/*.S)) 
 
 FLAGS:= -fno-pic -O2 -ffreestanding -fbuiltin -Wall -Wextra -nostdlib -lgcc -fno-builtin -fno-stack-protector -m32 $(INCLUDED)
+
+QEMU_CMD:=qemu-system-x86_64 -kernel Avana.bin -m 4G -monitor stdio -drive file=hdd.img,format=raw,if=none,id=hdd0 -device ahci,id=ahci -device ide-hd,drive=hdd0,bus=ahci.0
 
 all: clean build-asm build-kernel
 
@@ -41,6 +44,12 @@ build-assembly:
 build-objdump:
 	objdump -D -M intel Avana.bin > Avana.txt
 
+
+
+buildAndQemu: clean build-asm build-kernel qemu
+
+buildAndQemu1: clean build-asm build-kernel qemu1
+
 qemu_iso:
 	qemu-system-x86_64 -smp 1 -m 4G -cdrom Avana.iso -monitor stdio
 
@@ -53,20 +62,19 @@ qemu_d2:
 qemu_d4:
 	qemu-system-x86_64 -smp 4 -m 4G -kernel Avana.bin -monitor stdio -d cpu_reset
 
-qemu4: 
-	qemu-system-x86_64 -kernel Avana.bin -smp 4 -m 4G -monitor stdio -drive format=raw,file=hdd.img,if=none,id=hdd0 -device ahci,id=ahci -device ide-drive,drive=hdd0,bus=ahci.1
-
 qemu8: 
-	qemu-system-x86_64 -kernel Avana.bin -smp 8 -m 4G -monitor stdio -drive format=raw,file=hdd.img,if=none,id=hdd0 -device ahci,id=ahci -device ide-drive,drive=hdd0,bus=ahci.1
+	$(QEMU_CMD) -smp 8
+
+qemu4: 
+	$(QEMU_CMD) -smp 4
 
 qemu1: 
-	qemu-system-x86_64 -kernel Avana.bin -smp 1 -m 4G -monitor stdio -drive format=raw,file=hdd.img,if=none,id=hdd0 -device ahci,id=ahci -device ide-drive,drive=hdd0,bus=ahci.1
+	$(QEMU_CMD) -smp 1
 
 qemu2: 
-	qemu-system-x86_64 -kernel Avana.bin -smp 2 -m 4G -monitor stdio -drive format=raw,file=hdd.img,if=none,id=hdd0 -device ahci,id=ahci -device ide-drive,drive=hdd0,bus=ahci.1
+	$(QEMU_CMD) -smp 2
 
-qemu: 
-	make qemu4
+qemu: qemu4
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(FLAGS)

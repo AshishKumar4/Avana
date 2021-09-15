@@ -79,7 +79,7 @@ void Init_Schedulers_common(uint32_t core_id, uintptr_t Scheduler_start, uintptr
 
   nptr1 += sz_switcher;
   nptr1 = ROUNDUP(nptr1, 4) + 32;
-  memcpy((void *)nptr1, Scheduler_t, sz_Scheduler);
+  memcpy((void *)nptr1, Scheduler_start, sz_Scheduler);
   kits->scheduler = (uint32_t *)nptr1;
 
   nptr1 += sz_Scheduler;

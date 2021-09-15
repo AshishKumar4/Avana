@@ -321,45 +321,42 @@ void probe_port(ahci_t *ahci_c) //(HBA_MEM *abar)
 // Check device type
 int check_type(HBA_PORT *port)
 {
-  //DWORD sact = port->sact;
-  DWORD ssts = port->ssts;
+  DWORD sact = port->sact;
+	DWORD ssts = port->ssts;
 
-  BYTE ipm = (ssts >> 8) & 0x0F;
-  BYTE det = ssts & 0x0F;
-
-  //if(!sact)
-  // printf("\nDrive not Active!");
-  //  return AHCI_DEV_NULL;
-
-  if (det == 1)
+	BYTE ipm = (ssts >> 8) & 0x0F;
+  BYTE det = ssts & 0x3;
+  
+  printf("clb %x, clbu %x, fb %x, fbu %x", port->clb, port->clbu, port->fb, port->fbu);
+  printf("{sig %x, sact %x, ssts %x det: %x}", port->sig, port->sact, port->ssts, det);
+  if(det != HBA_PORT_DET_PRESENT) {
+    return AHCI_DEV_NULL;
+  }
+  else if(det == 1)
   {
     printf("\nDevice presence detected but Phy communication not established ");
   }
-  else if (det != HBA_PORT_DET_PRESENT) // Check drive status
-  {
-    //printf("\nHBA PORT DET not present");
-    return AHCI_DEV_NULL;
-  }
-  if (ipm != HBA_PORT_IPM_ACTIVE)
+
+  printf("Device found!");
+
+	if (ipm != HBA_PORT_IPM_ACTIVE)
   {
     printf("\nInterface Not in active Mode");
     return AHCI_DEV_NULL;
   }
+  
 
-  printf("\n{sig %x, sact %x, ssts %x, sctl %x, serr %x}", port->sig, port->sact, port->ssts, port->sctl, port->serr);
-
-  switch (port->sig)
-  {
-  case SATA_SIG_ATAPI:
-    return AHCI_DEV_SATAPI;
-  case SATA_SIG_SEMB:
-    return AHCI_DEV_SEMB;
-  case SATA_SIG_PM:
-    return AHCI_DEV_PM;
-  default:
-    //printf("\nSATA SIGNATURE NOT RECOGNIZED!");
-    return AHCI_DEV_SATA;
-  }
+	switch (port->sig & 0xf)
+	{
+	case SATA_SIG_ATAPI:
+		return AHCI_DEV_SATAPI;
+	case SATA_SIG_SEMB:
+		return AHCI_DEV_SEMB;
+	case SATA_SIG_PM:
+		return AHCI_DEV_PM;
+	default:
+		return AHCI_DEV_SATA;
+	}
 }
 
 void port_rebase(HBA_PORT *port, int portno)

@@ -15,7 +15,7 @@
 void idle_task()
 {
   printf("\nHello World!");
-  asm volatile("mov $0x4284, %eax; hlt");
+  // asm volatile("mov $0x4284, %eax; hlt");
   //printf("\nThis works!");
   //printf("\nArrived Here First %d", Get_Scheduler()->identity);
   //asm volatile("int $51");
@@ -30,7 +30,7 @@ void init()
   //asm volatile("int $51");
  // kill();
   while(1);
-    printf("%d ",*((uint32_t*)0xC2000000));
+    // printf("%d ",*((uint32_t*)0xC2000000));
 }
 
 void Spawner_Task()
@@ -40,6 +40,50 @@ void Spawner_Task()
   while(1);
 }
 
+void Spawner_Task4()
+{
+  printf("This Shit is WORKING!");
+  int i = 0;
+  while(1) {
+    // asm volatile("cli");
+    printf("A ", i);
+    // asm volatile("sti");
+    i += 1;
+    if (i > 10000) {
+      i = 0;
+    }
+  }
+}
+
+void Spawner_Task2()
+{
+  printf("This Shit is WORKING!");
+  int i = 0;
+  while(1) {
+    // asm volatile("cli");
+    printf("B ", i);
+    // asm volatile("sti");
+    i += 1;
+    if (i > 10000) {
+      i = 0;
+    }
+  }
+}
+
+void Spawner_Task3()
+{
+  printf("This Shit is WORKING!");
+  int i = 0;
+  while(1) {
+    // asm volatile("cli");
+    printf("C ", i);
+    // asm volatile("sti");
+    i += 1;
+    if (i > 10000) {
+      i = 0;
+    }
+  }
+}
 extern Aq_ListEntrys();
 
 void init_multitasking()
@@ -76,6 +120,9 @@ void init_multitasking()
 
   //printf("\nCreating few idle tasks...");
   Activate_task_direct(create_task("init", &init, 1, 0x202, kernel));
+  Activate_task_direct(create_task("test1", &Spawner_Task4, 1, 0x202, kernel));
+  Activate_task_direct(create_task("test1", &Spawner_Task2, 1, 0x202, kernel));
+  Activate_task_direct(create_task("test2", &Spawner_Task3, 1, 0x202, kernel));
   Process_t* testp = create_process("TestProcess", 0, 0, NULL);
   Activate_task_direct(create_task("test", &idle_task, 1, 0x202, testp));
   printf(" %g[Done]%g", 2, 15);
